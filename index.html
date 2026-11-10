@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cyber Essentials Readiness Check</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: one narrow working column, a wrapping step rail on top, results as a six-row status ledger. */
+:root{
+  --bg:#f2f5f4; --surface:#ffffff; --ink:#14201f; --muted:#55635f; --line:#d3dbd8;
+  --accent:#0e5a60; --accent-ink:#ffffff; --accent-soft:#e1eeee;
+  --good:#1c7446; --good-soft:#e2f2e9; --warn:#93570a; --warn-soft:#fbefd9; --bad:#b0271f; --bad-soft:#fbe6e4;
+  --idle:#55635f; --idle-soft:#e8ecea;
+  --display:"Bricolage Grotesque","Trebuchet MS",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0e1615; --surface:#162120; --ink:#e7efed; --muted:#9bada9; --line:#2a3a38;
+    --accent:#62c6cb; --accent-ink:#05272a; --accent-soft:#16302f;
+    --good:#66d39a; --good-soft:#143023; --warn:#f1b454; --warn-soft:#33270f; --bad:#ff9087; --bad-soft:#3a1a18;
+    --idle:#9bada9; --idle-soft:#1f2c2a;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0e1615; --surface:#162120; --ink:#e7efed; --muted:#9bada9; --line:#2a3a38;
+  --accent:#62c6cb; --accent-ink:#05272a; --accent-soft:#16302f;
+  --good:#66d39a; --good-soft:#143023; --warn:#f1b454; --warn-soft:#33270f; --bad:#ff9087; --bad-soft:#3a1a18;
+  --idle:#9bada9; --idle-soft:#1f2c2a;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;line-height:1.15;margin:0}
+h1{font-size:clamp(1.9rem,5vw,2.6rem);font-weight:700}
+h2{font-size:1.5rem;font-weight:700}
+h3{font-size:1.1rem;font-weight:600}
+p{margin:0}
+a{color:var(--accent)}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:6px}
+.wrap{max-width:780px;margin:0 auto;padding:0 18px}
+header.top{border-bottom:1px solid var(--line);background:var(--surface)}
+header.top .wrap{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between;padding-top:12px;padding-bottom:12px}
+.brand{font-family:var(--display);font-weight:700;font-size:1.05rem;background:none;border:0;color:var(--ink);padding:0}
+.mode{display:flex;border:1px solid var(--line);border-radius:999px;overflow:hidden}
+.mode button{border:0;background:transparent;color:var(--muted);padding:6px 14px;font-size:.88rem;font-weight:500}
+.mode button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+nav.steps{background:var(--surface);border-bottom:1px solid var(--line)}
+nav.steps .wrap{display:flex;flex-wrap:wrap;gap:6px;padding-top:10px;padding-bottom:10px}
+.step{border:1px solid var(--line);background:transparent;color:var(--muted);border-radius:8px;padding:5px 10px;font-size:.82rem;display:flex;gap:6px;align-items:center}
+.step b{font-weight:600;color:var(--ink)}
+.step small{font-variant-numeric:tabular-nums}
+.step.done small{color:var(--good)}
+.step[aria-current="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.step.res{margin-left:auto;border-color:var(--accent);color:var(--accent);font-weight:600}
+main{padding:28px 0 64px}
+.stack{display:flex;flex-direction:column;gap:20px}
+.lede{font-size:1.1rem;color:var(--muted);max-width:62ch}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px 20px}
+.note{border-left:4px solid var(--accent);background:var(--accent-soft);padding:12px 16px;border-radius:0 8px 8px 0;font-size:.95rem}
+.btns{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.btn{border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink);border-radius:8px;padding:10px 18px;font-weight:600}
+.btn.ghost{background:transparent;color:var(--accent)}
+.btn.quiet{border-color:var(--line);background:transparent;color:var(--muted);font-weight:500}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.cols .card h3{margin-bottom:4px}
+.cols .card p{font-size:.92rem;color:var(--muted)}
+.ex{display:flex;flex-direction:column;gap:8px}
+.ex button{text-align:left;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;padding:10px 14px}
+.ex button span{display:block;font-size:.88rem;color:var(--muted)}
+fieldset.q{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:16px 18px;margin:0;min-width:0}
+fieldset.q legend{float:left;width:100%;padding:0;font-weight:600;font-size:1.02rem;margin-bottom:6px}
+fieldset.q legend .n{color:var(--muted);font-weight:500;font-variant-numeric:tabular-nums;margin-right:6px}
+fieldset.q .help{clear:both;color:var(--muted);font-size:.92rem;max-width:65ch}
+fieldset.q .ref{font-size:.8rem;color:var(--muted);margin-top:4px}
+.tag{display:inline-block;font-size:.72rem;font-weight:600;letter-spacing:.02em;border-radius:4px;padding:1px 6px;background:var(--bad-soft);color:var(--bad);margin-left:6px;vertical-align:middle}
+.opts{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.opt{position:relative}
+.opt input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
+.opt span{display:block;border:1px solid var(--line);border-radius:8px;padding:7px 13px;font-size:.93rem;background:var(--bg)}
+.opt input:checked + span{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
+.opt input:focus-visible + span{outline:3px solid var(--accent);outline-offset:2px}
+.field{margin-top:12px;width:100%;max-width:340px;border:1px solid var(--line);border-radius:8px;padding:9px 12px;font:inherit;background:var(--bg);color:var(--ink)}
+.headline{border-radius:14px;padding:20px 22px;border:1px solid var(--line);background:var(--surface);border-left-width:8px}
+.headline.green{border-left-color:var(--good)} .headline.amber{border-left-color:var(--warn)} .headline.red{border-left-color:var(--bad)} .headline.idle{border-left-color:var(--idle)}
+.headline .k{font-size:.8rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600}
+.headline h1{margin:4px 0 8px}
+.ledger{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--surface)}
+.ledger details + details{border-top:1px solid var(--line)}
+.ledger details.block{border-bottom:3px solid var(--line)}
+.ledger summary{display:grid;grid-template-columns:118px 1fr;gap:4px 14px;align-items:center;padding:13px 16px;cursor:pointer;list-style:none}
+.ledger summary::-webkit-details-marker{display:none}
+.chip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:3px 10px;font-size:.8rem;font-weight:600;justify-self:start;white-space:nowrap}
+.chip::before{content:"";width:9px;height:9px;border-radius:50%;background:currentColor}
+.green .chip{background:var(--good-soft);color:var(--good)}
+.amber .chip{background:var(--warn-soft);color:var(--warn)}
+.red .chip{background:var(--bad-soft);color:var(--bad)}
+.idle .chip{background:var(--idle-soft);color:var(--idle)}
+.rname{font-weight:600}
+.rsum{grid-column:2;font-size:.88rem;color:var(--muted)}
+.ledger .inner{padding:0 16px 14px 16px}
+.ledger ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.ledger li{display:grid;grid-template-columns:84px 1fr;gap:10px;font-size:.9rem;align-items:start}
+.res{font-size:.74rem;font-weight:600;border-radius:4px;padding:2px 6px;text-align:center}
+.res.pass{background:var(--good-soft);color:var(--good)} .res.gap{background:var(--warn-soft);color:var(--warn)}
+.res.blocker{background:var(--bad-soft);color:var(--bad)} .res.unknown,.res.none{background:var(--idle-soft);color:var(--idle)}
+ol.plan{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px;counter-reset:p}
+ol.plan li{counter-increment:p;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:13px 16px 13px 52px;position:relative}
+ol.plan li::before{content:counter(p);position:absolute;left:16px;top:13px;font-family:var(--display);font-weight:700;font-size:1.15rem;color:var(--accent);font-variant-numeric:tabular-nums}
+ol.plan li.b{border-left:5px solid var(--bad)}
+ol.plan .do{font-weight:600}
+ol.plan .why{font-size:.9rem;color:var(--muted);margin-top:2px}
+.meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.meta span{font-size:.76rem;border:1px solid var(--line);border-radius:999px;padding:1px 9px;color:var(--muted)}
+ul.plain{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
+dl.scope{display:grid;grid-template-columns:minmax(110px,170px) 1fr;gap:6px 14px;margin:0;font-size:.94rem}
+dl.scope dt{color:var(--muted)} dl.scope dd{margin:0}
+textarea.report{width:100%;min-height:220px;font:.82rem/1.5 ui-monospace,Menlo,Consolas,monospace;border:1px solid var(--line);border-radius:8px;padding:10px;background:var(--bg);color:var(--ink)}
+footer{border-top:1px solid var(--line);padding:18px 0 40px;font-size:.84rem;color:var(--muted)}
+footer .wrap{display:flex;flex-direction:column;gap:6px}
+@media (max-width:480px){
+  .ledger summary{grid-template-columns:1fr}.rsum{grid-column:1}
+  .ledger li{grid-template-columns:1fr}.res{justify-self:start}
+  .step.res{margin-left:0}
+}
+@media (prefers-reduced-motion:no-preference){.opt span,.step{transition:background .12s,border-color .12s}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+"use strict";
+/* ---------- Data ---------- */
+var VERSION = "NCSC Requirements for IT Infrastructure v3.3 (Danzell question set)";
+var CHECKED = "10 November 2026";
+var SECTIONS = [
+  {id:"about", name:"About you", intro:"A few basics so the report makes sense. None of this is scored."},
+  {id:"scope", name:"Scope", intro:"Cyber Essentials covers every device and online service that touches your work data. List what you have. Cloud services are always included; under v3.3 they cannot be left out."},
+  {id:"fw", name:"Firewalls", scored:true, intro:"Firewalls and routers stand between your devices and the internet."},
+  {id:"sc", name:"Secure configuration", scored:true, intro:"Devices and software arrive set up for convenience. This control is about switching off what you do not need."},
+  {id:"su", name:"Security updates", scored:true, intro:"Out-of-date software is the most common way in. Three answers in this section are automatic fails if not met."},
+  {id:"ua", name:"User access", scored:true, intro:"Who can log in, to what, and how they prove who they are. One answer in this section is an automatic fail if not met."},
+  {id:"mp", name:"Malware protection", scored:true, intro:"Stopping harmful software from running on your devices."}
+];
+var YPNU = [["yes","Yes","pass"],["partly","Partly","gap"],["no","No","gap"],["unknown","I don't know","unknown"]];
+var YNU = [["yes","Yes","pass"],["no","No","gap"],["unknown","I don't know","unknown"]];
+function days(){return [["14","Within 14 days","pass"],["30","Within about a month","blocker"],["later","Longer, or when someone remembers","blocker"],["unknown","I don't know","unknown"]];}
+var Q = [
+ /* About */
+ {id:"org", s:"about", type:"text", p:"What is your organisation called?", t:"Organisation name", h:"Shown on your report. It stays in your browser."},
+ {id:"staff", s:"about", type:"choice", p:"How many people work there?", t:"Headcount", opts:[["1-9","1 to 9"],["10-49","10 to 49"],["50-249","50 to 249"],["250+","250 or more"]]},
+ {id:"it", s:"about", type:"choice", p:"Who looks after your IT?", t:"IT management model", opts:[["inhouse","Someone in-house"],["msp","An outside IT company"],["mix","A mix of both"],["nobody","Nobody in particular"]]},
+ {id:"remote", s:"about", type:"choice", p:"Where do people work?", t:"Working locations", opts:[["office","All at our premises"],["hybrid","Some from home or on the road"],["remote","Everyone is remote"]]},
+ {id:"sites", s:"about", type:"choice", p:"How many premises do you have?", t:"Sites", opts:[["one","One"],["many","Two or more"],["none","No fixed premises"]]},
+ /* Scope */
+ {id:"devices", s:"scope", type:"multi", p:"Which kinds of device are used for work?", t:"In-scope device types", h:"Tick everything that can reach work email, files or systems.", opts:[["pc","Laptops or desktops"],["mobile","Phones or tablets"],["server","Servers (on site or hosted)"],["vdi","Virtual desktops or thin clients"]]},
+ {id:"os", s:"scope", type:"multi", p:"Which systems do those devices run?", t:"Operating systems in scope", h:"If you are unsure, the device's Settings > About page will say.", opts:[["win11","Windows 11"],["win10","Windows 10 or older"],["mac","macOS"],["linux","Linux"],["ios","iPhone or iPad"],["android","Android"],["chrome","ChromeOS"],["winsrv","Windows Server"]]},
+ {id:"count", s:"scope", type:"number", p:"Roughly how many devices in total?", t:"Approximate device count", h:"A rough number is fine."},
+ {id:"cloud", s:"scope", type:"multi", p:"Which online services hold your work data?", t:"Cloud services in scope", h:"Anything staff log in to over the internet. These are always in scope.", opts:[["m365","Microsoft 365"],["gws","Google Workspace"],["acct","Accounting or payroll (Xero, Sage, QuickBooks)"],["files","File sharing (Dropbox, Box)"],["crm","CRM or sales tools"],["other","Other online services"]]},
+ {id:"byod", s:"scope", type:"choice", p:"Do staff use personal phones or laptops for work email or files?", t:"BYOD accessing organisational data or services", h:"Personal devices that reach work data count as in scope.", opts:[["yes","Yes"],["no","No"],["unknown","I don't know"]]},
+ {id:"net", s:"scope", type:"choice", p:"What network do people work on?", t:"Network boundary", opts:[["own","Our own office network and router"],["shared","A shared or serviced office network"],["home","Home and mobile networks only"]]},
+ {id:"assets", s:"scope", type:"choice", p:"Do you keep a list of your devices and online services?", t:"Asset inventory maintained", h:"Not a scored requirement, but you cannot scope an assessment without one.", opts:[["yes","Yes, and it is up to date"],["partly","Sort of"],["no","No"]]},
+ /* Firewalls */
+ {id:"fw1", s:"fw", key:true, p:"Has the password that came with your router or firewall been changed?", t:"Default administrative passwords on boundary firewalls and routers changed (or remote admin disabled)", h:"Factory passwords are published online. Anyone who finds your router can look yours up.", ref:"Firewalls: default administrative passwords", fix:"Change the admin password on every router and firewall to a long, unique one.", eff:"q", who:"i", opts:YNU},
+ {id:"fw2", s:"fw", p:"Can your router's settings page be reached from the internet?", t:"Administrative interface not internet-accessible, or protected by MFA or an IP allow list with documented business need", h:"If the settings page is open to the internet, attackers can try to log in to it from anywhere.", ref:"Firewalls: administrative interface access", fix:"Turn off remote administration, or restrict it with MFA or an approved list of addresses.", eff:"q", who:"i", opts:[["no","No, only from inside","pass"],["protected","Yes, but with MFA or an approved list of addresses","pass"],["open","Yes, with just a password","gap"],["unknown","I don't know","unknown"]]},
+ {id:"fw3", s:"fw", p:"Does your firewall block incoming connections unless you have deliberately allowed them?", t:"Unauthenticated inbound connections blocked by default", h:"This is the firewall's main job. Most are set this way out of the box, but ports get opened over the years.", ref:"Firewalls: block unauthenticated inbound connections", fix:"Set the firewall to block all inbound connections by default and review any open ports.", eff:"h", who:"i"},
+ {id:"fw4", s:"fw", p:"Is each allowed incoming connection written down, with a reason and someone's approval?", t:"Inbound firewall rules approved and documented by an authorised person, with business need", h:"A written list is how you notice a rule nobody needs any more.", ref:"Firewalls: inbound rules approved and documented", fix:"List every inbound rule with its purpose and who approved it.", eff:"h", who:"i", opts:[["yes","Yes","pass"],["none","We allow no incoming connections","pass"],["partly","Partly","gap"],["no","No","gap"],["unknown","I don't know","unknown"]]},
+ {id:"fw5", s:"fw", p:"Are old firewall rules removed when they are no longer needed?", t:"Unnecessary firewall rules removed or disabled promptly", h:"A rule left open for a supplier who finished two years ago is still an open door.", ref:"Firewalls: remove unneeded rules", fix:"Review firewall rules and remove any without a current business need.", eff:"q", who:"i", opts:[["yes","Yes","pass"],["none","We have no extra rules","pass"],["no","No","gap"],["unknown","I don't know","unknown"]]},
+ {id:"fw6", s:"fw", p:"Is the built-in firewall switched on for every laptop and desktop?", t:"Software firewall enabled on all devices, including those used on untrusted networks", h:"On home or public wifi your office firewall is not there. The one on the device is all you have.", ref:"Firewalls: software firewalls on devices", fix:"Turn on the operating system firewall on every laptop and desktop.", eff:"q", who:"i"},
+ /* Secure configuration */
+ {id:"sc1", s:"sc", p:"Have unused accounts been removed from devices and services?", t:"Unnecessary user accounts removed or disabled (guest, unused admin)", h:"Guest accounts and logins for people who left are easy to forget and easy to abuse.", ref:"Secure configuration: remove unnecessary accounts", fix:"Remove or disable guest accounts and any account nobody uses.", eff:"q", who:"i"},
+ {id:"sc2", s:"sc", key:true, p:"Have default passwords been changed on every device and piece of software?", t:"Default or guessable account passwords changed on all devices and software", h:"This includes printers, cameras, wifi and any software with a built-in admin login.", ref:"Secure configuration: change default passwords", fix:"Change every default or easily guessed password, including printers and network kit.", eff:"h", who:"i"},
+ {id:"sc3", s:"sc", p:"Has software you do not use been removed?", t:"Unnecessary software (applications, utilities, services) removed or disabled", h:"Every program is something else to keep updated. If nobody uses it, it should go.", ref:"Secure configuration: remove unnecessary software", fix:"Uninstall applications and switch off services nobody needs.", eff:"h", who:"i"},
+ {id:"sc4", s:"sc", p:"Is auto-run switched off, so a USB stick cannot start a program by itself?", t:"Auto-run features that execute files without user authorisation disabled", h:"Otherwise plugging in an infected stick can be enough to infect the computer.", ref:"Secure configuration: disable auto-run", fix:"Disable auto-run and auto-play on all devices.", eff:"q", who:"i"},
+ {id:"sc5", s:"sc", p:"Does everyone have to log in before they can see work data?", t:"Users authenticated before access to organisational data or services", h:"No shared open computers, and no services that let anyone straight in.", ref:"Secure configuration: authenticate users", fix:"Require a login on every device and service that holds work data.", eff:"q", who:"i"},
+ {id:"sc6", s:"sc", p:"Is every device locked with a PIN of 6 or more digits, a password, or a fingerprint or face?", t:"Device unlocking: biometric, password, or PIN of at least 6 characters", h:"A lost phone with no lock, or a 4-digit PIN, hands over everything on it.", ref:"Secure configuration: device unlocking", fix:"Set a minimum 6-digit PIN, password or biometric lock on every device.", eff:"q", who:"o"},
+ {id:"sc7", s:"sc", p:"Do devices lock out or slow down after repeated wrong guesses?", t:"Brute-force protection on device unlock: lock after no more than 10 attempts, or throttling", h:"Without this, someone holding the device can keep guessing until they get in.", ref:"Secure configuration: brute-force protection for device unlocking", fix:"Configure devices to lock or delay after no more than 10 failed attempts.", eff:"q", who:"i"},
+ /* Security updates */
+ {id:"su1", s:"su", key:true, auto:true, p:"Is every piece of software you use still supported by its maker?", t:"All in-scope software licensed and supported; unsupported software removed or segregated from the internet", h:"Supported means the maker still releases security fixes. Windows 10, for example, needs paid Extended Security Updates to count.", ref:"Security update management: licensed and supported software", fix:"Replace or remove unsupported software, or move it to a part of the network with no internet traffic.", eff:"p", who:"i", opts:[["yes","Yes, all of it","pass"],["isolated","No, but it is cut off from the internet","pass"],["no","No, some is out of support","blocker"],["unknown","I don't know","unknown"]]},
+ {id:"su1b", s:"su", key:true, auto:true, showIf:function(a){return (a.os||[]).indexOf("win10")>-1;}, p:"You listed Windows 10 or older. Are those devices on Microsoft's paid Extended Security Updates?", t:"Windows 10 devices enrolled in Extended Security Updates (ESU)", h:"Without ESU, Windows 10 no longer gets security fixes and counts as unsupported.", ref:"Security update management: licensed and supported software", fix:"Upgrade Windows 10 devices to Windows 11, replace them, or enrol them in Extended Security Updates.", eff:"p", who:"i", opts:[["yes","Yes","pass"],["no","No","blocker"],["unknown","I don't know","unknown"]]},
+ {id:"su2", s:"su", p:"Are automatic updates switched on wherever they are available?", t:"Automatic updates enabled where possible", h:"Automatic updates are the easiest way to meet the 14-day rule without thinking about it.", ref:"Security update management: automatic updates", fix:"Turn on automatic updates for operating systems and applications.", eff:"q", who:"i"},
+ {id:"su3", s:"su", key:true, auto:true, p:"How quickly are important security updates installed on computers, phones, routers and firewalls?", t:"High-risk and critical OS and firmware updates applied within 14 days of release (A6.4)", h:"The rule is 14 days from release for anything rated high or critical. Missing it is an automatic fail.", ref:"Security update management: 14-day patching, operating systems and firmware (A6.4)", fix:"Put operating system and router or firewall updates on a schedule that lands within 14 days of release.", eff:"h", who:"i", opts:days()},
+ {id:"su4", s:"su", key:true, auto:true, p:"How quickly are important security updates installed for apps such as browsers, Office and PDF readers?", t:"High-risk and critical application updates applied within 14 days of release (A6.5)", h:"Same 14-day rule, and the same automatic fail. Browsers and PDF readers are frequent targets.", ref:"Security update management: 14-day patching, applications (A6.5)", fix:"Make sure application updates install within 14 days, including browsers and add-ons.", eff:"h", who:"i", opts:days()},
+ {id:"su5", s:"su", p:"When a software maker says to change a setting to stay safe, is that done within 14 days too?", t:"Vulnerability fixes other than patches (configuration changes, registry fixes, scripts) applied within 14 days", h:"Some fixes are a setting change, not an update. They count under the same rule.", ref:"Security update management: vulnerability fixes", fix:"Agree with your IT provider that vendor workarounds and configuration fixes are applied within 14 days.", eff:"q", who:"i"},
+ /* User access */
+ {id:"ua1", s:"ua", p:"Does someone approve each new user account before it is created?", t:"Documented process to create and approve user accounts", h:"So nobody ends up with access simply because they asked.", ref:"User access control: account creation and approval", fix:"Write down who approves new accounts and follow it every time.", eff:"q", who:"o"},
+ {id:"ua2", s:"ua", p:"Does each person have their own login, not one shared between several people?", t:"Users authenticate with unique credentials", h:"Shared logins mean you cannot tell who did what, or remove one person's access.", ref:"User access control: unique credentials", fix:"Give every person their own account and retire shared logins.", eff:"h", who:"i"},
+ {id:"ua3", s:"ua", p:"When someone leaves, is their account switched off promptly?", t:"Accounts removed or disabled when no longer required", h:"A leaver's account that still works is an unlocked door nobody is watching.", ref:"User access control: remove accounts", fix:"Add account removal to your leaver checklist and clear any old accounts now.", eff:"q", who:"o"},
+ {id:"ua4", s:"ua", p:"Can people reach only what they need for their job?", t:"Access limited to what each user needs (least privilege)", h:"If one account is broken into, the damage stops at what that account could reach.", ref:"User access control: least privilege", fix:"Review who can access what and remove anything not needed for the role.", eff:"h", who:"o"},
+ {id:"ua5", s:"ua", key:true, p:"Are administrator accounts kept separate and used only for admin work, never for email or browsing?", t:"Separate accounts for administrative activities; no email or web browsing with admin accounts", h:"If an admin account opens a bad email, the attacker gets admin rights with it.", ref:"User access control: separate administrative accounts", fix:"Give admins a second, everyday account and stop using admin accounts for email or web.", eff:"h", who:"i"},
+ {id:"ua6", s:"ua", p:"Are admin rights taken away when someone no longer needs them?", t:"Special access privileges removed or disabled when no longer required", h:"Admin rights tend to pile up and never get handed back.", ref:"User access control: remove special privileges", fix:"Review admin accounts and remove rights nobody currently needs.", eff:"q", who:"i"},
+ {id:"ua7", s:"ua", key:true, auto:true, p:"Do all staff need a second step (a code, an app prompt, a passkey) to log in to every online service?", t:"MFA enforced on all in-scope cloud services for all users, administrators and shared accounts (A7.14 to A7.17)", h:"Every account on every cloud service, with no exceptions. One shared or admin account without it is an automatic fail.", ref:"User access control: MFA on cloud services (A7.14 to A7.17)", fix:"Turn on MFA for every account on every cloud service, including admin and shared accounts.", eff:"h", who:"i", opts:[["yes","Yes, everyone, everywhere","pass"],["most","Most accounts or services, not all","blocker"],["admins","Only admins","blocker"],["no","No","blocker"],["unknown","I don't know","unknown"]]},
+ {id:"ua8", s:"ua", p:"Where passwords are used, are they at least 12 characters, or 8 with common passwords blocked, or backed by a second step?", t:"Password quality enforced by one of: MFA, minimum 12 characters, or minimum 8 with a deny list", h:"Short or common passwords are guessed in seconds by automated tools.", ref:"User access control: password-based authentication", fix:"Set a technical minimum password length of 12, or 8 with a deny list, where MFA is not used.", eff:"q", who:"i"},
+ {id:"ua9", s:"ua", p:"Do accounts lock or slow down after repeated wrong passwords?", t:"Brute-force protection: MFA, throttling, or lockout after no more than 10 failed attempts", h:"This stops a program from trying thousands of passwords against an account.", ref:"User access control: protect against brute-force attacks", fix:"Enable account lockout or throttling after no more than 10 failed attempts.", eff:"q", who:"i"},
+ {id:"ua10", s:"ua", p:"Do staff know how to pick good passwords, and what to do if one leaks?", t:"Users supported to choose unique passwords; process to change compromised passwords promptly", h:"For example a password manager, plus a clear person to tell if something looks wrong.", ref:"User access control: password guidance and compromise process", fix:"Give staff short password guidance (or a password manager) and a named contact for suspected leaks.", eff:"q", who:"o"},
+ /* Malware */
+ {id:"mp1", s:"mp", key:true, p:"Does every laptop, desktop and server have anti-malware protection switched on?", t:"Anti-malware software or application allow-listing active on all in-scope devices", h:"The protection built in to Windows and macOS counts, as long as it is on.", ref:"Malware protection: mechanism on all devices", fix:"Turn on anti-malware protection on every device, or restrict devices to an approved list of applications.", eff:"q", who:"i", opts:[["yes","Yes, anti-malware everywhere","pass"],["allow","We only allow approved applications to run","pass"],["partly","On some devices","gap"],["no","No","gap"],["unknown","I don't know","unknown"]]},
+ {id:"mp2", s:"mp", p:"Does it update itself automatically?", t:"Anti-malware updated in line with vendor recommendations", h:"New threats appear daily. Protection that is months old misses them.", ref:"Malware protection: kept up to date", fix:"Set anti-malware software to update automatically.", eff:"q", who:"i"},
+ {id:"mp3", s:"mp", p:"Does it check files automatically and stop harmful ones from running?", t:"Anti-malware prevents malware from running and blocks execution of malicious code", h:"Checking only when someone remembers to run a scan is not enough.", ref:"Malware protection: prevent malware running", fix:"Enable real-time protection so files are checked as they are opened.", eff:"q", who:"i"},
+ {id:"mp4", s:"mp", p:"Does it warn about or block dangerous websites?", t:"Anti-malware prevents connections to malicious websites", h:"Many infections start with a link, not an attachment.", ref:"Malware protection: block malicious websites", fix:"Turn on web protection in the anti-malware tool or browser.", eff:"q", who:"i"},
+ {id:"mp5", s:"mp", p:"On phones and tablets, are apps installed only from the official app store or an approved list?", t:"Mobile devices restricted to approved applications (official stores or managed allow list)", h:"Apps from outside the official stores skip the checks that keep most malware out.", ref:"Malware protection: application allow-listing on mobile devices", fix:"Block app installs from outside official stores on work phones and tablets.", eff:"q", who:"i", opts:[["yes","Yes","pass"],["na","No phones or tablets are used for work","pass"],["no","No","gap"],["unknown","I don't know","unknown"]]}
+];
+var EFF = {q:"Quick win", h:"Half a day", p:"Project"};
+var WHO = {o:"You", i:"IT provider"};
+var QBY = {}; Q.forEach(function(q){QBY[q.id]=q;});
+
+/* ---------- Pure logic ---------- */
+function optsOf(q){return q.opts || YPNU;}
+function visible(q,a){return !q.showIf || q.showIf(a);}
+function resultOf(q,a){
+  var v=a[q.id]; if(v===undefined||v===null||v==="") return "none";
+  var o=optsOf(q).filter(function(x){return x[0]===v;})[0];
+  return o ? (o[2]||"info") : "none";
+}
+function answered(q,a){
+  var v=a[q.id];
+  if(q.type==="multi") return Array.isArray(v)&&v.length>0;
+  return v!==undefined&&v!==null&&v!=="";
+}
+function score(a){
+  var out={controls:[],blockers:[],possible:[],actions:[],ask:[],unanswered:0};
+  SECTIONS.filter(function(s){return s.scored;}).forEach(function(s){
+    var c={id:s.id,name:s.name,items:[],gaps:0,unknowns:0,none:0,keyFailed:false};
+    Q.filter(function(q){return q.s===s.id&&visible(q,a);}).forEach(function(q){
+      var r=resultOf(q,a); c.items.push({q:q,r:r});
+      if(r==="gap"||r==="blocker"){c.gaps++; if(q.key) c.keyFailed=true;}
+      if(r==="blocker") out.blockers.push(q);
+      if(r==="unknown"){c.unknowns++; out.ask.push(q); if(q.auto) out.possible.push(q);}
+      if(r==="none"){c.none++; out.unanswered++;}
+    });
+    var n=c.gaps+c.unknowns;
+    c.status = (c.keyFailed||n>=3) ? "red" : c.none>0 ? "idle" : n>0 ? "amber" : "green";
+    out.controls.push(c);
+  });
+  out.blockerStatus = out.blockers.length ? "red" : out.possible.length ? "amber" : out.unanswered ? "idle" : "green";
+  var anyRed = out.blockers.length>0 || out.controls.some(function(c){return c.status==="red";});
+  var anyAmber = out.possible.length>0 || out.controls.some(function(c){return c.status==="amber";});
+  out.headline = anyRed ? "red" : out.unanswered ? "idle" : anyAmber ? "amber" : "green";
+  out.controls.forEach(function(c){
+    c.items.forEach(function(it){
+      if(it.r!=="gap"&&it.r!=="blocker") return;
+      var rank = it.r==="blocker" ? 0 : c.status==="red" ? (it.q.key?1:2) : 3;
+      out.actions.push({q:it.q,r:it.r,control:c.name,rank:rank});
+    });
+  });
+  out.actions.sort(function(x,y){return x.rank-y.rank;});
+  return out;
+}
+function allPass(extra){
+  var a={};
+  Q.forEach(function(q){
+    if(SECTIONS.filter(function(s){return s.id===q.s;})[0].scored){
+      a[q.id]=optsOf(q).filter(function(o){return o[2]==="pass";})[0][0];
+    }
+  });
+  Object.keys(extra).forEach(function(k){a[k]=extra[k];});
+  return a;
+}
+var PERSONAS = [
+  {name:"Hartley & Co Accountants", blurb:"5 staff on Microsoft 365. MFA is on for everyone except one shared admin account.",
+   a:function(){return allPass({org:"Hartley & Co Accountants (example)",staff:"1-9",it:"msp",remote:"hybrid",sites:"one",devices:["pc","mobile"],os:["win11","ios"],count:"9",cloud:["m365","acct"],byod:"no",net:"own",assets:"yes",ua7:"most"});}},
+  {name:"Pennine Build Ltd", blurb:"20 staff, a mix of Windows 10 and 11 laptops, updates done monthly, router still on its factory password.",
+   a:function(){return allPass({org:"Pennine Build Ltd (example)",staff:"10-49",it:"nobody",remote:"hybrid",sites:"one",devices:["pc","mobile"],os:["win10","win11","android"],count:"32",cloud:["m365","acct","files"],byod:"yes",net:"own",assets:"partly",fw1:"no",su1:"no",su1b:"no",su2:"partly",su3:"30",su4:"30"});}},
+  {name:"Northlight Design Studio", blurb:"8 staff on Google Workspace with passkeys. Well run, but nobody is sure what the firewall lets in.",
+   a:function(){return allPass({org:"Northlight Design Studio (example)",staff:"1-9",it:"inhouse",remote:"hybrid",sites:"one",devices:["pc","mobile"],os:["mac","ios"],count:"14",cloud:["gws","files"],byod:"no",net:"shared",assets:"yes",fw3:"unknown"});}}
+];
+if(typeof module!=="undefined"){module.exports={score:score,PERSONAS:PERSONAS,Q:Q};}
+
+/* ---------- UI ---------- */
+var KEY="ce-readiness-v1";
+var S={a:{},mode:"plain",view:"start",confirmClear:false,report:false};
+function load(){try{var r=JSON.parse(localStorage.getItem(KEY)||"null"); if(r&&r.a){S.a=r.a;S.mode=r.mode||"plain";S.view=r.view||"start";}}catch(e){}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify({a:S.a,mode:S.mode,view:S.view}));}catch(e){}}
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+function txt(q){return S.mode==="tech" ? q.t : q.p;}
+function hasAnswers(){return Object.keys(S.a).length>0;}
+function secQs(id){return Q.filter(function(q){return q.s===id&&visible(q,S.a);});}
+
+function navHtml(){
+  var h='<nav class="steps" aria-label="Sections"><div class="wrap">';
+  SECTIONS.forEach(function(s,i){
+    var qs=secQs(s.id), n=qs.filter(function(q){return answered(q,S.a);}).length;
+    h+='<button class="step'+(n===qs.length?' done':'')+'" data-go="'+i+'"'+(S.view===i?' aria-current="true"':'')+'><b>'+(i+1)+'. '+esc(s.name)+'</b><small>'+n+'/'+qs.length+'</small></button>';
+  });
+  h+='<button class="step res" data-go="results"'+(S.view==="results"?' aria-current="true"':'')+'>Results</button></div></nav>';
+  return h;
+}
+function headerHtml(){
+  return '<header class="top"><div class="wrap"><button class="brand" data-go="start">Cyber Essentials Readiness Check</button>'+
+  '<div class="mode" role="group" aria-label="Wording"><button data-mode="plain" aria-pressed="'+(S.mode==="plain")+'">Plain English</button><button data-mode="tech" aria-pressed="'+(S.mode==="tech")+'">Technical</button></div></div></header>';
+}
+function footerHtml(){
+  return '<footer><div class="wrap"><span>Independent readiness check built by Leo Greathead. Where cyber security meets AI governance.</span>'+
+  '<span>Mapped to '+esc(VERSION)+'. Last checked '+CHECKED+'. Not affiliated with the NCSC or IASME.</span>'+
+  '<span>This is not a Cyber Essentials assessment or certification. Certification is only available through an IASME certification body. Your answers stay in your browser.</span></div></footer>';
+}
+function startHtml(){
+  var h='<div class="stack"><h1>Would you pass Cyber Essentials today?</h1>'+
+  '<p class="lede">Answer about 45 questions on your devices, logins and updates. You get a traffic light for each of the five controls, any automatic fails called out separately, and a plan for what to fix first.</p>'+
+  '<div class="note"><strong>Why now.</strong> Since 27 April 2026 the Danzell question set fails an application outright for three things: missing a 14-day security update, any cloud account without multi-factor authentication, and unsupported software. This check looks for those first.</div>'+
+  '<div class="btns"><button class="btn" data-go="0">'+(hasAnswers()?"Resume where you left off":"Start the check")+'</button>'+
+  (hasAnswers()?'<button class="btn ghost" data-go="results">See results so far</button>':'')+'<span style="color:var(--muted);font-size:.9rem">25 to 35 minutes. Saves as you go.</span></div>'+
+  '<div class="cols"><div class="card"><h3>Private</h3><p>Nothing is sent anywhere. Answers are saved only in this browser, and you can clear them at any time.</p></div>'+
+  '<div class="card"><h3>Two wordings</h3><p>Plain English for owners, technical for IT. Switch at the top whenever you like; your answers stay.</p></div>'+
+  '<div class="card"><h3>"I don\'t know" is fine</h3><p>Each one becomes a question in a list you can send to whoever looks after your IT.</p></div></div>'+
+  '<div class="stack" style="gap:10px"><h3>Or see it working with a made-up business</h3><div class="ex">';
+  PERSONAS.forEach(function(p,i){h+='<button data-persona="'+i+'"><strong>'+esc(p.name)+'</strong><span>'+esc(p.blurb)+'</span></button>';});
+  h+='</div><p style="font-size:.85rem;color:var(--muted)">These are fictional examples. Loading one replaces any answers you have entered.</p></div>';
+  h+='<p style="font-size:.9rem;color:var(--muted)">This is an independent readiness check, not a Cyber Essentials assessment or certification. Certification is only available through an IASME certification body.</p></div>';
+  return h;
+}
+function qHtml(q,n){
+  var h='<fieldset class="q" id="q-'+q.id+'"><legend><span class="n">'+n+'</span>'+esc(txt(q))+(q.auto?'<span class="tag">Automatic fail</span>':'')+'</legend>';
+  var help = q.h ? '<p class="help">'+esc(q.h)+'</p>' : '';
+  if(S.mode==="tech"&&q.ref) help+='<p class="help ref">Requirement: '+esc(q.ref)+'</p>';
+  h+=help;
+  var v=S.a[q.id];
+  if(q.type==="text"||q.type==="number"){
+    h+='<input class="field" id="f-'+q.id+'" data-q="'+q.id+'" type="'+(q.type==="number"?"number":"text")+'"'+(q.type==="number"?' min="0" inputmode="numeric"':'')+' value="'+esc(v||"")+'" aria-label="'+esc(txt(q))+'">';
+  } else {
+    var multi=q.type==="multi";
+    h+='<div class="opts">';
+    optsOf(q).forEach(function(o){
+      var on = multi ? (Array.isArray(v)&&v.indexOf(o[0])>-1) : v===o[0];
+      h+='<label class="opt"><input id="f-'+q.id+'-'+o[0]+'" type="'+(multi?"checkbox":"radio")+'" name="'+q.id+'" data-q="'+q.id+'" value="'+o[0]+'"'+(on?" checked":"")+'><span>'+esc(o[1])+'</span></label>';
+    });
+    h+='</div>';
+  }
+  return h+'</fieldset>';
+}
+function sectionHtml(i){
+  var s=SECTIONS[i], qs=secQs(s.id);
+  var h='<div class="stack"><div><p style="color:var(--muted);font-size:.85rem;font-weight:600">Section '+(i+1)+' of '+SECTIONS.length+'</p><h2>'+esc(s.name)+'</h2></div><p class="lede" style="font-size:1rem">'+esc(s.intro)+'</p>';
+  qs.forEach(function(q,k){h+=qHtml(q,(k+1)+".");});
+  h+='<div class="btns">'+(i>0?'<button class="btn ghost" data-go="'+(i-1)+'">Back</button>':'')+
+     (i<SECTIONS.length-1?'<button class="btn" data-go="'+(i+1)+'">Next: '+esc(SECTIONS[i+1].name)+'</button>':'<button class="btn" data-go="results">See my results</button>')+'</div></div>';
+  return h;
+}
+var RES={pass:"Pass",gap:"Gap",blocker:"Blocker",unknown:"Unknown",none:"No answer"};
+var CHIP={green:"Ready",amber:"Some gaps",red:"Needs work",idle:"Incomplete"};
+function sumOf(c){
+  var p=[]; if(c.gaps) p.push(c.gaps+(c.gaps===1?" gap":" gaps")); if(c.unknowns) p.push(c.unknowns+" unknown"); if(c.none) p.push(c.none+" unanswered");
+  if(c.keyFailed) p.push("key requirement not met");
+  return p.length ? p.join(", ") : "All requirements met";
+}
+function labels(q,v){
+  if(!answered(q,S.a)) return "Not answered";
+  var o=optsOf(q); if(!Array.isArray(v)) v=[v];
+  return v.map(function(x){var m=o.filter(function(y){return y[0]===x;})[0]; return m?m[1]:x;}).join(", ");
+}
+function resultsHtml(){
+  var r=score(S.a), org=S.a.org||"Your organisation";
+  var H={green:["Ready to apply","No automatic fails and every control is green. Check the scope summary below is complete, then book an assessment."],
+         amber:["Nearly there","No confirmed automatic fails, but there are gaps or unknowns to clear before you apply."],
+         red:["Not ready yet","You would be likely to fail today. Start with the items at the top of the action plan."],
+         idle:["Not finished","Some questions have no answer yet, so this is a partial picture."]}[r.headline];
+  var h='<div class="stack"><div class="headline '+r.headline+'"><p class="k">'+esc(org)+' · '+new Date().toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"})+'</p><h1>'+H[0]+'</h1><p>'+H[1]+'</p></div>';
+  /* ledger */
+  var bs=r.blockerStatus, bl={green:"None found",amber:"Unconfirmed",red:r.blockers.length+(r.blockers.length===1?" blocker":" blockers"),idle:"Incomplete"}[bs];
+  var bsum = r.blockers.length ? "These fail an application whatever else is in place" : r.possible.length ? "You answered \"I don't know\" to "+r.possible.length+" automatic-fail question"+(r.possible.length===1?"":"s") : bs==="idle" ? "Answer every question to confirm" : "No automatic-fail conditions found";
+  h+='<div class="ledger"><details class="block '+bs+'"'+(r.blockers.length||r.possible.length?" open":"")+'><summary><span class="chip">'+bl+'</span><span class="rname">Automatic fails</span><span class="rsum">'+bsum+'</span></summary><div class="inner"><ul>';
+  r.blockers.forEach(function(q){h+='<li><span class="res blocker">Blocker</span><span>'+esc(txt(q))+'<br><span style="color:var(--muted)">Your answer: '+esc(labels(q,S.a[q.id]))+'</span></span></li>';});
+  r.possible.forEach(function(q){h+='<li><span class="res unknown">Unknown</span><span>'+esc(txt(q))+'</span></li>';});
+  if(!r.blockers.length&&!r.possible.length) h+='<li><span class="res pass">Clear</span><span>14-day updates, MFA on every cloud service, and supported software.</span></li>';
+  h+='</ul></div></details>';
+  r.controls.forEach(function(c){
+    h+='<details class="'+c.status+'"><summary><span class="chip">'+CHIP[c.status]+'</span><span class="rname">'+esc(c.name)+'</span><span class="rsum">'+sumOf(c)+'</span></summary><div class="inner"><ul>';
+    c.items.forEach(function(it){h+='<li><span class="res '+it.r+'">'+RES[it.r]+'</span><span>'+esc(txt(it.q))+'</span></li>';});
+    h+='</ul></div></details>';
+  });
+  h+='</div>';
+  /* plan */
+  h+='<h2>What to fix, in order</h2>';
+  if(r.actions.length){
+    h+='<ol class="plan">';
+    r.actions.forEach(function(x){
+      h+='<li'+(x.r==="blocker"?' class="b"':'')+'><p class="do">'+esc(x.q.fix)+'</p><p class="why">'+esc(x.q.h)+'</p><div class="meta">'+(x.r==="blocker"?'<span style="color:var(--bad);border-color:var(--bad)">Automatic fail</span>':'')+'<span>'+esc(x.control)+'</span><span>'+EFF[x.q.eff]+'</span><span>'+WHO[x.q.who]+'</span></div></li>';
+    });
+    h+='</ol>';
+  } else h+='<p style="color:var(--muted)">Nothing to fix from the answers given.</p>';
+  if(r.ask.length){
+    h+='<h2>Questions for your IT provider</h2><div class="card"><p style="color:var(--muted);font-size:.92rem;margin-bottom:10px">You answered "I don\'t know" to these. Send them on and update your answers.</p><ul class="plain">';
+    r.ask.forEach(function(q){h+='<li>'+esc(q.t)+'?'+(q.auto?' <span class="tag">Automatic fail if not</span>':'')+'</li>';});
+    h+='</ul></div>';
+  }
+  /* scope */
+  h+='<h2>What you said is in scope</h2><div class="card"><dl class="scope">';
+  ["devices","os","count","cloud","byod","net","assets"].forEach(function(id){var q=QBY[id]; h+='<dt>'+esc(q.t)+'</dt><dd>'+esc(q.type==="number"?(S.a[id]||"Not answered"):labels(q,S.a[id]))+'</dd>';});
+  h+='</dl><ul class="plain" style="margin-top:12px;font-size:.92rem;color:var(--muted)"><li>Every cloud service your staff log in to is in scope. If one is missing from the list above, add it and check it has MFA.</li>'+
+     (S.a.byod==="yes"?'<li>Personal devices that reach work email or files are in scope, and must meet the same rules.</li>':'')+
+     (S.a.assets&&S.a.assets!=="yes"?'<li>Build a full list of devices and services before you apply. You cannot scope an assessment without one.</li>':'')+'</ul></div>';
+  /* next */
+  h+='<h2>Next steps</h2><div class="card"><ul class="plain"><li>Fix the items above, then run this check again.</li><li>Read the requirements and preview the real questions on <a href="https://iasme.co.uk/cyber-essentials/preview-the-self-assessment-questions-for-cyber-essentials/">IASME\'s Cyber Essentials pages</a>.</li><li>When every row is green, apply through an <a href="https://iasme.co.uk/cyber-essentials/">IASME certification body</a>.</li></ul></div>';
+  h+='<div class="btns"><button class="btn" data-act="copy">Copy report as text</button><button class="btn ghost" data-go="0">Change my answers</button>'+
+     (S.confirmClear?'<span>Clear all answers?</span><button class="btn quiet" data-act="clear-yes">Yes, clear</button><button class="btn quiet" data-act="clear-no">Cancel</button>':'<button class="btn quiet" data-act="clear">Clear my answers</button>')+'</div>';
+  if(S.report) h+='<div><p id="copymsg" style="font-size:.9rem;color:var(--muted);margin-bottom:6px">'+esc(S.report)+'</p><textarea class="report" id="reportbox" readonly aria-label="Report text">'+esc(reportText(r))+'</textarea></div>';
+  h+='<p style="font-size:.9rem;color:var(--muted)">This is an independent readiness check, not a Cyber Essentials assessment or certification. Certification is only available through an IASME certification body.</p></div>';
+  return h;
+}
+function reportText(r){
+  var L=[], org=S.a.org||"Your organisation";
+  var HL={green:"READY TO APPLY",amber:"NEARLY THERE",red:"NOT READY YET",idle:"NOT FINISHED"}[r.headline];
+  L.push("CYBER ESSENTIALS READINESS CHECK","Organisation: "+org,"Date: "+new Date().toLocaleDateString("en-GB"),"Mapped to: "+VERSION,"","OVERALL: "+HL,"");
+  L.push("AUTOMATIC FAILS: "+(r.blockers.length? r.blockers.length+" found" : r.possible.length? "unconfirmed" : "none found"));
+  r.blockers.forEach(function(q){L.push("  - "+q.t);});
+  L.push("","CONTROLS");
+  r.controls.forEach(function(c){L.push("  "+c.name+": "+CHIP[c.status]+" ("+sumOf(c)+")");});
+  L.push("","ACTION PLAN");
+  if(!r.actions.length) L.push("  Nothing to fix from the answers given.");
+  r.actions.forEach(function(x,i){L.push("  "+(i+1)+". "+x.q.fix+(x.r==="blocker"?" [AUTOMATIC FAIL]":""),"     "+x.control+" | "+EFF[x.q.eff]+" | "+WHO[x.q.who]);});
+  if(r.ask.length){L.push("","QUESTIONS FOR YOUR IT PROVIDER"); r.ask.forEach(function(q){L.push("  - "+q.t+"?");});}
+  L.push("","SCOPE");
+  ["devices","os","count","cloud","byod","net"].forEach(function(id){var q=QBY[id]; L.push("  "+q.t+": "+(q.type==="number"?(S.a[id]||"Not answered"):labels(q,S.a[id])));});
+  L.push("","Readiness check by Leo Greathead. Not a Cyber Essentials assessment or certification.","Certification is only available through an IASME certification body.");
+  return L.join("\n");
+}
+function render(focusTop){
+  var body = S.view==="start" ? startHtml() : S.view==="results" ? resultsHtml() : sectionHtml(S.view);
+  document.getElementById("app").innerHTML = headerHtml()+navHtml()+'<main><div class="wrap">'+body+'</div></main>'+footerHtml();
+  if(focusTop) window.scrollTo(0,0);
+}
+function refreshNav(){var n=document.querySelector("nav.steps"); if(n) n.outerHTML=navHtml();}
+function init(){
+  load(); render();
+  var app=document.getElementById("app");
+  app.addEventListener("click",function(e){
+    var b=e.target.closest("button"); if(!b) return;
+    if(b.dataset.go!==undefined){var g=b.dataset.go; S.view=(g==="start"||g==="results")?g:parseInt(g,10); S.confirmClear=false; S.report=false; save(); render(true); return;}
+    if(b.dataset.mode){S.mode=b.dataset.mode; save(); render(); return;}
+    if(b.dataset.persona!==undefined){S.a=PERSONAS[+b.dataset.persona].a(); S.view="results"; S.report=false; save(); render(true); return;}
+    var act=b.dataset.act;
+    if(act==="clear"){S.confirmClear=true; render(); return;}
+    if(act==="clear-no"){S.confirmClear=false; render(); return;}
+    if(act==="clear-yes"){S.a={}; S.confirmClear=false; S.report=false; S.view="start"; save(); render(true); return;}
+    if(act==="copy"){
+      var t=reportText(score(S.a));
+      var done=function(msg){S.report=msg; render(); var box=document.getElementById("reportbox"); if(box){box.focus(); box.select();}};
+      try{navigator.clipboard.writeText(t).then(function(){done("Copied. Paste it into an email or document. The text is also below.");},function(){done("Copying was blocked. Select the text below and copy it.");});}
+      catch(err){done("Copying was blocked. Select the text below and copy it.");}
+    }
+  });
+  app.addEventListener("change",function(e){
+    var el=e.target, id=el.dataset&&el.dataset.q; if(!id) return;
+    var q=QBY[id];
+    if(q.type==="multi"){
+      S.a[id]=Array.prototype.map.call(app.querySelectorAll('input[name="'+id+'"]:checked'),function(x){return x.value;});
+      if(!S.a[id].length) delete S.a[id];
+    } else if(q.type==="text"||q.type==="number"){ if(el.value==="") delete S.a[id]; else S.a[id]=el.value; }
+    else S.a[id]=el.value;
+    save(); refreshNav();
+  });
+  app.addEventListener("input",function(e){
+    var el=e.target, id=el.dataset&&el.dataset.q; if(!id) return; var q=QBY[id];
+    if(q.type==="text"||q.type==="number"){ if(el.value==="") delete S.a[id]; else S.a[id]=el.value; save(); }
+  });
+}
+if(typeof document!=="undefined") init();
+</script>
+</body>
+</html>
